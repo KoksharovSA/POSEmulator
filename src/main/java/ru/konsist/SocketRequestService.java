@@ -3,6 +3,7 @@ package ru.konsist;
 import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
@@ -12,8 +13,9 @@ public class SocketRequestService extends Thread {
     private String message;
     private JTextArea areaLog;
 
-    public SocketRequestService(Socket socketSomething, String message, JTextArea areaLog) {
+    public SocketRequestService(Socket socketSomething, String message, JTextArea areaLog) throws SocketException {
         this.socketSomething = socketSomething;
+        this.socketSomething.setSoTimeout(Settings.getInstance().getSocketTimeOut());
         this.message = message;
         this.areaLog = areaLog;
     }
@@ -49,8 +51,8 @@ public class SocketRequestService extends Thread {
                 for (byte item : listBytes) {
                     responseServer += (char) item;
                 }
-                areaLog.setText(areaLog.getText() + "\nПринято сообщение:\n=====================================\n");
-                areaLog.setText(areaLog.getText() + new String(responseServer) + "\n=====================================\n");
+                areaLog.setText(areaLog.getText() + "Принято сообщение:\n=====================================\n");
+                areaLog.setText(areaLog.getText() + new String(responseServer) + "\n****************************************************\n");
             }
         } catch (IOException ioe) {
             System.out.println(ioe);

@@ -48,7 +48,7 @@ public class Window {
         constraints.gridx = 1;
 
         JTextField hostTextField = new JTextField();
-        hostTextField.setText("172.17.52.52");
+        hostTextField.setText(Settings.getInstance().getIp());
         hostTextField.setColumns(15);
         container.add(hostTextField, constraints);
 
@@ -56,7 +56,7 @@ public class Window {
         constraints.gridx = 1;
 
         JTextField portTextField = new JTextField();
-        portTextField.setText("5101");
+        portTextField.setText(Integer.toString(Settings.getInstance().getPort()));
         hostTextField.setColumns(15);
         container.add(portTextField, constraints);
 
@@ -86,7 +86,9 @@ public class Window {
 
         DefaultListModel listModel = new DefaultListModel();
         for (String item: Supports.readFile(Paths.get(".").toAbsolutePath().normalize().toString() + "/Requests.txt")) {
-            listModel.addElement (item);
+            if (!item.contains("#")){
+                listModel.addElement (item);
+            }
         }
 
         JList list = new JList(listModel);
@@ -97,7 +99,7 @@ public class Window {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 byte[] responseBytes;
-                responseBytes = HexFormat.of().parseHex(list.getSelectedValue().toString());
+                responseBytes = HexFormat.of().parseHex(list.getSelectedValue().toString().split("-")[1]);
                 String message = "";
                 try {
                     message = new String(responseBytes, "Windows-1251");
@@ -113,7 +115,7 @@ public class Window {
         container.add(listScroller, constraints);
 
 
-        constraints.gridwidth = 4;
+        constraints.gridwidth = 3;
         constraints.gridy = 4;
         constraints.gridx = 0;
 
@@ -123,7 +125,7 @@ public class Window {
             public void actionPerformed(ActionEvent e) {
                 SocketRequestService socketRequestService = null;
                 try {
-                    socketRequestService = new SocketRequestService(new Socket(hostTextField.getText(), Integer.parseInt(portTextField.getText())), list.getSelectedValue().toString(), textSelectionLog);
+                    socketRequestService = new SocketRequestService(new Socket(hostTextField.getText(), Integer.parseInt(portTextField.getText())), list.getSelectedValue().toString().split("-")[1], textSelectionLog);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -133,6 +135,20 @@ public class Window {
             }
         });
         container.add(buttonSend, constraints);
+
+        constraints.gridwidth = 1;
+        constraints.gridy = 4;
+        constraints.gridx = 3;
+
+        JButton buttonClear = new JButton("Очистить");
+
+        buttonClear.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textSelectionLog.setText("");
+            }
+        });
+        container.add(buttonClear, constraints);
 
         frame.getContentPane().add(BorderLayout.WEST, container); // Добавляем кнопку на Frame
         frame.setVisible(true); // Делаем окно видимым
